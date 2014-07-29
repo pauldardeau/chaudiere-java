@@ -140,6 +140,7 @@ public class IniReader implements SectionedConfigDataSource {
       m_iniFile = iniFile;
         
       if (!readFile()) {
+         Logger.debug("IniReader failed to read configuration file");
          throw new Exception("unable to read configuration file: " + iniFile);
       }
    }
@@ -221,7 +222,7 @@ public class IniReader implements SectionedConfigDataSource {
       KeyValuePairs map = new KeyValuePairs();
     
       if (!readSection(section, map)) {
-         //Logger.warning("IniReader readSection returned false");
+         Logger.warning("IniReader readSection returned false");
          return false;
       }
     

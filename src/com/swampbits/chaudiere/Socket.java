@@ -41,13 +41,13 @@ public class Socket {
             m_isConnected = true;
             return true;
          } catch (java.net.UnknownHostException uhe) {
-            
+            Logger.debug("Socket.open failed (UnknownHostException): " + uhe.getMessage());
          } catch (java.io.IOException ioe) {
-            
+            Logger.debug("Socket.open failed (IOException): " + ioe.getMessage());
          } catch (java.lang.SecurityException se) {
-            
+            Logger.debug("Socket.open failed (SecurityException): " + se.getMessage());
          } catch (java.lang.IllegalArgumentException iae) {
-            
+            Logger.debug("Socket.open failed (IllegalArgumentException): " + iae.getMessage());
          }
       }
       
@@ -72,8 +72,6 @@ public class Socket {
       m_userIndex = -1;
       m_port = port;
       m_isConnected = false;
-      
-      //Logger.logInstanceCreate("Socket");
 
       if (!open()) {
          throw new Exception("Unable to open socket");
@@ -100,6 +98,7 @@ public class Socket {
          m_writer.flush();
          return bufferLength;
       } catch (java.io.IOException ioe) {
+         Logger.debug("Socket.send failed: " + ioe.getMessage());
          return -1;
       }
    }
@@ -137,6 +136,7 @@ public class Socket {
          m_writer.flush();
          return true;
       } catch (java.io.IOException ioe) {
+         Logger.debug("Socket.write failed: " + ioe.getMessage());
          return false;
       }
    }
@@ -164,17 +164,18 @@ public class Socket {
             }
          } catch (java.io.IOException ioe) {
             bytesReceived = -1;
+            Logger.debug("Socket.readSocket failed: " + ioe.getMessage());
          }
       
-         //if (Logger.isLogging(Logger.LogLevel.Debug)) {
-         //   Logger.debug("socket read, bytes received = " + bytesReceived);
-         //}
+         if (Logger.isLogging(Logger.LogLevel.Debug)) {
+            Logger.debug("readSocket, bytes received = " + bytesReceived);
+         }
         
          if (bytesReceived <= 0) {  // error or connection closed by peer?
             if (bytesReceived == 0) {
                // our connection has been closed by the other process. nothing
                // more we can do!!!
-               //Logger.debug("connection reset by peer");
+               Logger.debug("connection reset by peer");
                close();
                return false;
             } else {
@@ -210,7 +211,7 @@ public class Socket {
             
             m_socket.close();
          } catch (java.io.IOException ioe) {
-            
+            Logger.debug("Socket.close failed: " + ioe.getMessage());
          }
          m_socket = null;
          m_isConnected = false;
@@ -266,7 +267,8 @@ public class Socket {
          try {
             m_socket.setTcpNoDelay(on);
             return true;
-         } catch (java.net.SocketException e) {
+         } catch (java.net.SocketException se) {
+            Logger.debug("Socket.setTcpNoDelay: " + se.getMessage());
          }
       }
       
@@ -281,7 +283,8 @@ public class Socket {
       if (m_socket != null) {
          try {
             return m_socket.getTcpNoDelay();
-         } catch (java.net.SocketException e) {
+         } catch (java.net.SocketException se) {
+            Logger.debug("Socket.getTcpNoDelay failed: " + se.getMessage());
          }
       }
       
@@ -299,7 +302,7 @@ public class Socket {
             m_socket.setSendBufferSize(size);
             return true;
          } catch (java.net.SocketException se) {
-            
+            Logger.debug("Socket.setSendBufferSize failed: " + se.getMessage());
          } catch (java.lang.IllegalArgumentException iae) {
             
          }
@@ -317,7 +320,7 @@ public class Socket {
          try {
             return m_socket.getSendBufferSize();
          } catch (java.net.SocketException se) {
-            
+            Logger.debug("Socket.getSendBufferSize failed: " + se.getMessage());
          }
       }
       
@@ -335,9 +338,9 @@ public class Socket {
             m_socket.setReceiveBufferSize(size);
             return true;
          } catch (java.net.SocketException se) {
-            
+            Logger.debug("Socket.setReceiveBufferSize failed: " + se.getMessage());
          } catch (java.lang.IllegalArgumentException iae) {
-            
+            Logger.debug("Socket.setReceiveBufferSize failed: " + iae.getMessage());
          }
       }
       
@@ -353,7 +356,7 @@ public class Socket {
          try {
             return m_socket.getReceiveBufferSize();
          } catch (java.net.SocketException se) {
-            
+            Logger.debug("Socket.getReceiveBufferSize failed: " + se.getMessage());
          }
       }
       
@@ -371,7 +374,7 @@ public class Socket {
             m_socket.setKeepAlive(on);
             return true;
          } catch (java.net.SocketException se) {
-            
+            Logger.debug("Socket.setKeepAlive failed: " + se.getMessage());
          }
       }
       
@@ -387,7 +390,7 @@ public class Socket {
          try {
             return m_socket.getKeepAlive();
          } catch (java.net.SocketException se) {
-            
+            Logger.debug("Socket.getKeepAlive failed: " + se.getMessage());
          }
       }
       
@@ -403,7 +406,7 @@ public class Socket {
          try {
             return m_reader.readLine();
          } catch (java.io.IOException ioe) {
-            
+            Logger.debug("Socket.readLine failed: " + ioe.getMessage());
          }
       }
       
