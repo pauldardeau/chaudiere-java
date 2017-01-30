@@ -18,20 +18,22 @@ import java.io.OutputStreamWriter;
  */
 public class Socket {
    
-   private final String m_serverAddress;
-   private java.net.Socket m_socket;
-   private int m_userIndex;
-   private final int m_port;
-   private boolean m_isConnected;
-   private BufferedReader m_reader;
-   private BufferedWriter m_writer;
+   private String m_serverAddress = null;
+   private java.net.Socket m_socket = null;
+   private int m_userIndex = 0;
+   private int m_port = 0;
+   private boolean m_isConnected = false;
+   private BufferedReader m_reader = null;
+   private BufferedWriter m_writer = null;
+   private SocketCompletionObserver m_completionObserver = null;
+   private int m_socketFD = -1;
    
    
    /**
     * Opens a socket connection to the server on the specified port
     * @return boolean indicating whether the connection was established
     */
-   protected boolean open() {
+   public boolean open() {
       if ((m_serverAddress != null) && (m_serverAddress.length() > 0) && (m_port > 0)) {
          try {
             m_socket = new java.net.Socket(m_serverAddress, m_port);
@@ -69,13 +71,27 @@ public class Socket {
     */
    public Socket(String address, int port) throws Exception {
       m_serverAddress = address;
-      m_userIndex = -1;
       m_port = port;
-      m_isConnected = false;
-
-      if (!open()) {
-         throw new Exception("Unable to open socket");
+   }
+   
+   public Socket(java.net.Socket socket) {
+      m_socket = socket;
+      if ((socket != null) && (socket.getPort() > 0)) {
+         m_isConnected = true;
       }
+   }
+   
+   public Socket(SocketCompletionObserver completionObserver, int socketFD) {
+      m_completionObserver = completionObserver;
+      m_socketFD = socketFD;
+      m_userIndex = -1;
+      m_isConnected = true;
+      m_serverAddress = null;
+      m_port = -1;
+      //m_includeMessageSize = false;
+      //m_inputBuffer(new char[DEFAULT_BUFFER_SIZE]);
+      //m_inBufferSize = DEFAULT_BUFFER_SIZE;
+      //Logger.logInstanceCreate("Socket");
    }
    
    /**
@@ -417,23 +433,21 @@ public class Socket {
     * Retrieves the peer socket IP address. This is useful in server
     * applications when the server needs to log IP addresses of all clients
     * that connect.
-    * @param ipAddress the string that will receive the IP address
-    * @return boolean indicating whether the peer IP address could be retrieved
+    * @return String client IP address or null if unavailable
     */
-   public boolean getPeerIPAddress(StringBuilder ipAddress) {
+   public String getPeerIPAddress() {
+      String ipAddress = null;
       if (m_socket != null) {
          java.net.SocketAddress address = m_socket.getRemoteSocketAddress();
          if (address != null) {
             if (address instanceof java.net.InetSocketAddress) {
                java.net.InetSocketAddress inetAddress = (java.net.InetSocketAddress) address;
-               ipAddress.setLength(0);
-               ipAddress.append(inetAddress.toString());
-               return true;
+               ipAddress = inetAddress.toString();
             }
          }
       }
       
-      return false;
+      return ipAddress;
    }
    
    /**
@@ -444,4 +458,9 @@ public class Socket {
       return m_port;
    }
 
+   public void requestComplete() {
+      if (null != m_completionObserver) {
+         m_completionObserver.notifySocketComplete(this);
+      }
+   }
 }
