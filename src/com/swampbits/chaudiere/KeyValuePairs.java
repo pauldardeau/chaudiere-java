@@ -6,6 +6,7 @@
 
 package com.swampbits.chaudiere;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -36,12 +37,14 @@ public class KeyValuePairs {
    
    /**
     * Retrieves the keys contained within the collection
-    * @param keys the vector to be populated with collection keys
+    * @return list of contained keys
     */
-   public void getKeys(List<String> keys) {
+   public List<String> getKeys() {
+      ArrayList<String> keys = new ArrayList<>();
       for (String key: m_keyValues.keySet()) {
          keys.add(key);
       }
+      return keys;
    }
 
    /**
