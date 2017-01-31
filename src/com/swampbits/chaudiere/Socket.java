@@ -26,7 +26,6 @@ public class Socket {
    private BufferedReader m_reader = null;
    private BufferedWriter m_writer = null;
    private SocketCompletionObserver m_completionObserver = null;
-   private int m_socketFD = -1;
    
    
    /**
@@ -38,8 +37,8 @@ public class Socket {
          try {
             m_socket = new java.net.Socket(m_serverAddress, m_port);
             init();
-            m_reader = new BufferedReader(new InputStreamReader(m_socket.getInputStream()));
-            m_writer = new BufferedWriter(new OutputStreamWriter(m_socket.getOutputStream()));
+            setReader(new BufferedReader(new InputStreamReader(m_socket.getInputStream())));
+            setWriter(new BufferedWriter(new OutputStreamWriter(m_socket.getOutputStream())));
             m_isConnected = true;
             return true;
          } catch (java.net.UnknownHostException uhe) {
@@ -74,6 +73,10 @@ public class Socket {
       m_port = port;
    }
    
+   /**
+    * 
+    * @param socket 
+    */
    public Socket(java.net.Socket socket) {
       m_socket = socket;
       if ((socket != null) && (socket.getPort() > 0)) {
@@ -81,9 +84,13 @@ public class Socket {
       }
    }
    
+   /**
+    * 
+    * @param completionObserver
+    * @param socketFD the file descriptor for existing socket connection
+    */
    public Socket(SocketCompletionObserver completionObserver, int socketFD) {
       m_completionObserver = completionObserver;
-      m_socketFD = socketFD;
       m_userIndex = -1;
       m_isConnected = true;
       m_serverAddress = null;
@@ -101,11 +108,7 @@ public class Socket {
     * @return the number of bytes written
     */
    public int send(char[] sendBuffer, int bufferLength) {
-      if ((m_socket == null) ||
-          !m_isConnected ||
-          (null == sendBuffer) ||
-          (m_writer == null))
-      {
+      if (!m_isConnected || (null == sendBuffer) || (m_writer == null)) {
          return -1;
       }
 
@@ -139,11 +142,7 @@ public class Socket {
     * @return boolean indicating whether the string was successfully written
     */
    public boolean write(String payload) {
-      if ((m_socket == null) ||
-          !m_isConnected ||
-          (null == payload) ||
-          (m_writer == null))
-      {
+      if (!m_isConnected || (null == payload) || (m_writer == null)) {
          return false;
       }
       
@@ -248,6 +247,14 @@ public class Socket {
     */
    public boolean isConnected() {
       return m_isConnected;
+   }
+   
+   /**
+    * This method added to allow MockSocket to indicate when it's connected
+    * @param isConnected 
+    */
+   protected void setConnected(boolean isConnected) {
+      m_isConnected = isConnected;
    }
    
    /**
@@ -418,7 +425,7 @@ public class Socket {
     * @return the line read from the socket, or null on error
     */
    public String readLine() {
-      if ((m_socket != null) && (m_reader != null)) {
+      if (this.m_isConnected && (m_reader != null)) {
          try {
             return m_reader.readLine();
          } catch (java.io.IOException ioe) {
@@ -457,10 +464,38 @@ public class Socket {
    public int getPort() {
       return m_port;
    }
+   
+   /**
+    * Retrieve server address for remote socket
+    * @return ip address/hostname for remote socket connection or null
+    */
+   public String getServerAddress() {
+      return m_serverAddress;
+   }
 
+   /**
+    * 
+    */
    public void requestComplete() {
       if (null != m_completionObserver) {
          m_completionObserver.notifySocketComplete(this);
       }
    }
+   
+   /**
+    * Establish the reader to be used for receiving data
+    * @param reader 
+    */
+   protected void setReader(BufferedReader reader) {
+      m_reader = reader;
+   }
+   
+   /**
+    * Establish the writer to be used for sending data
+    * @param writer 
+    */
+   protected void setWriter(BufferedWriter writer) {
+      m_writer = writer;
+   }
+
 }
