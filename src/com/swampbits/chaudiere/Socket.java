@@ -10,6 +10,7 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.io.IOException;
 
 /**
  * The Socket class wraps a native Java socket and provides convenience
@@ -77,9 +78,12 @@ public class Socket {
     * 
     * @param socket 
     */
-   public Socket(java.net.Socket socket) {
+   public Socket(java.net.Socket socket) throws IOException {
       m_socket = socket;
       if ((socket != null) && (socket.getPort() > 0)) {
+         init();
+         setReader(new BufferedReader(new InputStreamReader(m_socket.getInputStream())));
+         setWriter(new BufferedWriter(new OutputStreamWriter(m_socket.getOutputStream())));
          m_isConnected = true;
       }
    }
