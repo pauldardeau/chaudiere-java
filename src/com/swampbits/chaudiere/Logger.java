@@ -56,14 +56,6 @@ public abstract class Logger {
    
    /**
     *
-    * @param occurrenceType
-    * @param occurrenceName
-    */
-   public abstract void logOccurrence(String occurrenceType,
-                              String occurrenceName);
-   
-   /**
-    *
     * @param logger
     */
    public static void setLogger(Logger logger) {
@@ -150,16 +142,5 @@ public abstract class Logger {
       return false;
    }
 
-   /**
-    *
-    * @param occurrenceType
-    * @param occurrenceName
-    */
-   public static void countOccurrence(String occurrenceType,
-                               String occurrenceName) {
-      if (loggerInstance != null) {
-         loggerInstance.logOccurrence(occurrenceType, occurrenceName);
-      }
-   }
    
 }

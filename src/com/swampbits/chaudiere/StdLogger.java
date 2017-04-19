@@ -6,20 +6,24 @@
 
 package com.swampbits.chaudiere;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * StdLogger is the default logger and logs to the console.
  * @author paul
  */
 public class StdLogger extends Logger
 {
-   private static final String PREFIX_CRITICAL = "Critical:";
-   private static final String PREFIX_ERROR    = "Error:";
-   private static final String PREFIX_WARNING  = "Warning:";
-   private static final String PREFIX_INFO     = "Info:";
-   private static final String PREFIX_DEBUG    = "Debug:";
-   private static final String PREFIX_VERBOSE  = "Verbose:";
+   private static final String PREFIX_CRITICAL = "Critical";
+   private static final String PREFIX_ERROR    = "Error";
+   private static final String PREFIX_WARNING  = "Warning";
+   private static final String PREFIX_INFO     = "Info";
+   private static final String PREFIX_DEBUG    = "Debug";
+   private static final String PREFIX_VERBOSE  = "Verbose";
 
    private LogLevel m_logLevel;
+   private final HashMap<String,Long> m_mapLogLevelOccurrences = new HashMap<>();
    
    /**
     * Retrieves the prefix to use for a log level
@@ -86,7 +90,16 @@ public class StdLogger extends Logger
    @Override
    public void logMessage(LogLevel logLevel, String logMessage) {
       if (isLoggingLevel(logLevel)) {
-         System.out.println(logLevelPrefix(logLevel) + " " + logMessage);
+         String prefix = logLevelPrefix(logLevel);
+         synchronized(m_mapLogLevelOccurrences) {
+            if (m_mapLogLevelOccurrences.containsKey(prefix)) {
+               m_mapLogLevelOccurrences.put(prefix,
+                       m_mapLogLevelOccurrences.get(prefix) + 1);
+            } else {
+               m_mapLogLevelOccurrences.put(prefix, 1L);
+            }
+         }
+         System.out.println(prefix + ": " + logMessage);
       }
    }
    
@@ -101,14 +114,13 @@ public class StdLogger extends Logger
    }
    
    /**
-    * TBD
-    * @param occurrenceType
-    * @param occurrenceName
+    * 
+    * @return 
     */
-   @Override
-   public void logOccurrence(String occurrenceType,
-                              String occurrenceName) {
-      //TODO: add implementation for logOccurrence
+   public Map<String, Long> populateLogLevelOccurrences() {
+      synchronized(m_mapLogLevelOccurrences) {
+         return (Map) m_mapLogLevelOccurrences.clone();
+      }
    }
    
 }
